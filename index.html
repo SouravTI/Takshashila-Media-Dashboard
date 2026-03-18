@@ -73,6 +73,7 @@ body::after{
 .li{background:rgba(0,119,181,.1);color:#005c8e}
 .xx{background:rgba(0,0,0,.07);color:#222}
 .yt{background:rgba(255,0,0,.08);color:#b30000}
+.ig{background:rgba(193,53,132,.1);color:#8a1a5c}
 
 .ctitle{font-family:var(--alice);font-size:18px;color:var(--ink);line-height:1.25}
 .csub{font-size:10px;color:var(--muted);margin-top:3px}
@@ -193,7 +194,7 @@ footer{border-top:.5px solid var(--rule);padding:14px 52px;display:flex;align-it
   <div class="hst" id="hs0">
     <span class="hnum" id="hn-follow">0</span>
     <div class="hlbl">Total followers</div>
-    <div class="hsub">LinkedIn · X · YouTube</div>
+    <div class="hsub">LinkedIn · X · YouTube · Instagram</div>
   </div>
   <div class="hst" id="hs1">
     <span class="hnum" id="hn-plays">0</span>
@@ -206,9 +207,9 @@ footer{border-top:.5px solid var(--rule);padding:14px 52px;display:flex;align-it
     <div class="hsub">LinkedIn + X · last 30 days</div>
   </div>
   <div class="hst" id="hs3">
-    <span class="hnum" id="hn-yt">—</span>
+    <span class="hnum" id="hn-yt">4,525</span>
     <div class="hlbl">YouTube subscribers</div>
-    <div class="hsub" id="hn-yt-sub">Fetching live data…</div>
+    <div class="hsub" id="hn-yt-sub">Updating live…</div>
     <div class="api-badge"><span class="api-badge-dot"></span>YouTube API</div>
   </div>
 </section>
@@ -270,6 +271,35 @@ footer{border-top:.5px solid var(--rule);padding:14px 52px;display:flex;align-it
     </div>
   </div>
 
+  <!-- INSTAGRAM -->
+  <div class="card">
+    <div class="chead">
+      <div>
+        <div class="plat ig">Instagram</div>
+        <div class="ctitle">Instagram</div>
+        <div class="csub">@takshashila_institution · Follower count as of Mar 2026</div>
+      </div>
+      <span class="cbadge" style="background:rgba(193,53,132,.08);color:#8a1a5c">4,728 followers</span>
+    </div>
+    <div class="mrows">
+      <div class="mrow"><span class="mlbl">Followers</span><span class="mval">4,728</span></div>
+      <div class="mrow">
+        <span class="mlbl">Impressions, reach & engagement</span>
+        <div class="mr">
+          <span style="font-size:10px;color:var(--muted);font-style:italic">Requires Instagram Graph API (OAuth)</span>
+          <a href="https://developers.facebook.com/docs/instagram-api/" target="_blank" style="font-size:9px;font-weight:700;letter-spacing:.07em;color:#8a1a5c;background:rgba(193,53,132,.08);padding:2px 9px;border-radius:100px;text-decoration:none;white-space:nowrap">Connect API →</a>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:12px 16px;background:rgba(193,53,132,.05);border-radius:14px;border:.5px solid rgba(193,53,132,.12);font-size:10px;color:var(--muted);line-height:1.7">
+      To pull live Instagram analytics — impressions, reach, profile visits, story views, post engagement — you need a
+      <strong style="color:#8a1a5c">Facebook Developer App</strong> with Instagram Graph API access and a connected
+      <strong style="color:#8a1a5c">Professional / Business account</strong>.
+      Once set up, add your <code style="font-size:9px;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px">INSTAGRAM_ACCESS_TOKEN</code> to a small proxy server
+      (the token cannot be exposed in client-side code) and this card will show live data.
+    </div>
+  </div>
+
   <!-- CHARTS -->
   <div class="g2">
     <div class="card">
@@ -297,7 +327,7 @@ footer{border-top:.5px solid var(--rule);padding:14px 52px;display:flex;align-it
         <div class="csub">YouTube Data API v3 · Updated <span id="ytUpdated">fetching…</span> · Period toggle controls this section</div>
       </div>
       <div>
-        <div class="yt-big-v" id="ytSubs">—</div>
+        <div class="yt-big-v" id="ytSubs">4,525</div>
         <div class="yt-big-l">Subscribers</div>
       </div>
     </div>
@@ -344,7 +374,7 @@ footer{border-top:.5px solid var(--rule);padding:14px 52px;display:flex;align-it
       <div class="spark-dates"><span>Feb 17</span><span>Mar 18</span></div>
       <div style="margin-top:20px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Combined audience</div>
       <div class="sboxes">
-        <div class="sbox"><div class="sbox-v" id="sb-total">46,725</div><div class="sbox-l">Total followers</div><div class="sbox-n">LI 27K · X 15.2K · YT 4.5K</div></div>
+        <div class="sbox"><div class="sbox-v" id="sb-total">46,725</div><div class="sbox-l">Total followers</div><div class="sbox-n">LI 27K · X 15.2K · YT 4,525</div></div>
         <div class="sbox"><div class="sbox-v">179K</div><div class="sbox-l">Impressions (30d)</div><div class="sbox-n">LI 70K + X 109K</div></div>
         <div class="sbox"><div class="sbox-v">498 hrs</div><div class="sbox-l">Podcast consumed</div><div class="sbox-n">Spotify · last 30 days</div></div>
         <div class="sbox"><div class="sbox-v">1,500+</div><div class="sbox-l">ATP episodes</div><div class="sbox-n">Since launch</div></div>
@@ -461,6 +491,7 @@ async function initYouTube(){
     ytChanId=ch.id;
     const s=ch.statistics;
     const subs=parseInt(s.subscriberCount);
+    const subsStart=4525;
 
     /* animate subscriber hero number */
     const el=document.getElementById('hn-yt');
@@ -468,11 +499,11 @@ async function initYouTube(){
     const step=now=>{
       const prog=Math.min((now-st)/dur,1);
       const ease=1-Math.pow(1-prog,4);
-      el.textContent=Math.round(subs*ease).toLocaleString('en-IN');
+      el.textContent=Math.round(subsStart+(subs-subsStart)*ease).toLocaleString('en-IN');
       if(prog<1)requestAnimationFrame(step);
       else{
         /* update combined followers */
-        const total=27000+15200+subs;
+        const total=27000+15200+4728+subs;
         document.getElementById('hn-follow').textContent=total.toLocaleString('en-IN');
         document.getElementById('sb-total').textContent=fmt(total);
       }
