@@ -1,223 +1,1389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotdog?</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
-    #app { max-width: 400px; width: 100%; background: #fff; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    h1 { font-size: 22px; font-weight: 600; margin-bottom: 2px; }
-    .subtitle { font-size: 13px; color: #888; margin-bottom: 1rem; }
-    #camera-view { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 12px; overflow: hidden; }
-    #video { width: 100%; height: 100%; object-fit: cover; display: block; }
-    #canvas { display: none; }
-    #snap-result { width: 100%; height: 100%; object-fit: cover; display: none; }
-    #overlay {
-      position: absolute; inset: 0; display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-end; padding-bottom: 1.5rem;
-      background: linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%);
-    }
-    #snap-btn {
-      width: 68px; height: 68px; border-radius: 50%; background: #fff;
-      border: 4px solid rgba(255,255,255,0.5); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.1s;
-    }
-    #snap-btn:active { transform: scale(0.92); }
-    #snap-btn-inner { width: 52px; height: 52px; border-radius: 50%; background: #fff; border: 2px solid #ccc; }
-    #flip-btn {
-      position: absolute; top: 12px; right: 12px;
-      background: rgba(0,0,0,0.5); color: #fff; border: none;
-      border-radius: 50%; width: 36px; height: 36px; font-size: 18px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-    }
-    #retake-btn {
-      position: absolute; top: 12px; left: 12px;
-      background: rgba(0,0,0,0.5); color: #fff; border: none;
-      border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; display: none;
-    }
-    #loading-overlay {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.6);
-      display: none; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
-    }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; display: inline-block; margin: 0 3px; animation: blink 1.2s infinite both; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes blink { 0%,80%,100%{opacity:0.15} 40%{opacity:1} }
-    #result-panel { display: none; margin-top: 1rem; border-radius: 12px; padding: 1.25rem; text-align: center; }
-    #result-panel.hotdog { background: #FAEEDA; border: 1px solid #FAC775; }
-    #result-panel.not-hotdog { background: #FCEBEB; border: 1px solid #F7C1C1; }
-    #verdict-text { font-size: 28px; font-weight: 600; margin-bottom: 6px; }
-    #verdict-text.hotdog { color: #633806; }
-    #verdict-text.not-hotdog { color: #501313; }
-    #reason-text { font-size: 14px; line-height: 1.6; }
-    #reason-text.hotdog { color: #854F0B; }
-    #reason-text.not-hotdog { color: #791F1F; }
-    #no-camera { display: none; text-align: center; padding: 3rem 1rem; color: #888; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X100S Street School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0d0b;
+    --surface: #161512;
+    --surface2: #1e1c18;
+    --border: #2a2822;
+    --border2: #3a3730;
+    --text: #e8e4dc;
+    --text2: #9a9488;
+    --text3: #5c5850;
+    --accent: #c8a96e;
+    --accent2: #8b6f3a;
+    --red: #c45c3a;
+    --green: #5a8a5a;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Playfair Display', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: var(--bg);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .brand-name {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .brand-sub {
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .progress-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-label { color: var(--text3); font-size: 11px; letter-spacing: 0.08em; }
+
+  .progress-bar {
+    width: 120px;
+    height: 2px;
+    background: var(--border2);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .progress-pct { color: var(--accent); font-size: 11px; }
+
+  nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+
+  nav button:hover { color: var(--text2); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main { flex: 1; overflow-y: auto; }
+
+  /* TAB PANELS */
+  .panel { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* PROGRAMME TAB */
+  .steps-grid {
+    display: grid;
+    gap: 2px;
+  }
+
+  .step-row {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: start;
+    gap: 0;
+    border: 1px solid var(--border);
+    margin-bottom: 2px;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .step-row:hover { border-color: var(--border2); }
+  .step-row.active-step { border-color: var(--accent2); }
+  .step-row.done { border-color: var(--green); opacity: 0.75; }
+
+  .step-num {
+    padding: 20px 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text3);
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-row.active-step .step-num { color: var(--accent); }
+  .step-row.done .step-num { color: var(--green); }
+
+  .step-body { padding: 16px 20px; }
+
+  .step-title {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .step-sub {
+    color: var(--text3);
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .step-content { display: none; }
+  .step-row.expanded .step-content { display: block; margin-top: 12px; }
+
+  .step-content p { color: var(--text2); font-size: 12px; margin-bottom: 12px; line-height: 1.7; }
+
+  .tasks { list-style: none; }
+  .tasks li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px;
+  }
+
+  .tasks li input[type=checkbox] {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--border2);
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .tasks li input[type=checkbox]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .tasks li input[type=checkbox]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -1px;
+    left: 2px;
+    font-size: 10px;
+    color: var(--bg);
+  }
+
+  .step-cta {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: none;
+    color: var(--text2);
+    transition: all 0.2s;
+  }
+
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .btn.primary:hover { background: #d4b87e; }
+
+  .step-status {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    border-left: 1px solid var(--border);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border2);
+  }
+
+  .step-row.active-step .status-dot { background: var(--accent); }
+  .step-row.done .status-dot { background: var(--green); }
+
+  .status-pct { color: var(--text3); font-size: 10px; }
+
+  /* SHOT REVIEW TAB */
+  .review-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .upload-zone {
+    border: 1px dashed var(--border2);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .upload-zone:hover { border-color: var(--accent2); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .upload-icon { font-size: 32px; margin-bottom: 12px; color: var(--text3); }
+  .upload-label { color: var(--text2); font-size: 12px; margin-bottom: 6px; }
+  .upload-sub { color: var(--text3); font-size: 11px; }
+
+  .uploaded-preview { width: 100%; height: 260px; object-fit: cover; display: none; }
+
+  .review-controls { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  select {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 9px 12px;
+    width: 100%;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    pointer-events: none;
+  }
+
+  .review-output {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    min-height: 300px;
+  }
+
+  .review-output-title {
+    color: var(--text3);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .review-placeholder {
+    color: var(--text3);
+    font-size: 12px;
+    line-height: 1.8;
+    font-style: italic;
+  }
+
+  .review-result { display: none; }
+  .review-result p { color: var(--text2); font-size: 12px; line-height: 1.8; margin-bottom: 14px; }
+
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .score-label { color: var(--text3); font-size: 11px; width: 100px; flex-shrink: 0; }
+
+  .score-track {
+    flex: 1;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .score-val { color: var(--accent); font-size: 11px; width: 28px; text-align: right; }
+
+  .loading-dots { color: var(--text3); font-size: 12px; }
+
+  /* COMMUNITY WALL */
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .community-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: border-color 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .community-card:hover { border-color: var(--border2); }
+
+  .card-img-area {
+    height: 140px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card-avatar {
+    font-family: var(--serif);
+    font-size: 48px;
+    color: var(--text3);
+  }
+
+  .card-specialty {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .card-body { padding: 14px 16px; }
+  .card-name { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .card-handle { color: var(--text3); font-size: 11px; margin-bottom: 10px; }
+  .card-desc { color: var(--text2); font-size: 11px; line-height: 1.7; margin-bottom: 12px; }
+  .card-link { color: var(--accent); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* IMAGE WALL */
+  .wall-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .wall-upload-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    cursor: pointer;
+    border: 1px dashed var(--border2);
+    background: none;
+    color: var(--text3);
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .wall-upload-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .wall-upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .image-wall {
+    columns: 3;
+    column-gap: 8px;
+  }
+
+  .wall-image {
+    break-inside: avoid;
+    margin-bottom: 8px;
+    position: relative;
+    background: var(--surface2);
+  }
+
+  .wall-image img { width: 100%; display: block; }
+  .wall-image-meta {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px 10px 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .wall-image:hover .wall-image-meta { opacity: 1; }
+  .wall-image-meta span { color: var(--text); font-size: 10px; }
+
+  .wall-placeholder {
+    border: 1px dashed var(--border);
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text3);
+    font-size: 11px;
+  }
+
+  /* FILM SIM */
+  .sim-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 32px;
+    border: 1px dashed var(--border2);
+    margin-bottom: 28px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .sim-upload-area:hover { border-color: var(--accent2); }
+  .sim-upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .sim-upload-area .upload-label { color: var(--text2); }
+
+  .sim-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .sim-card {
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .sim-preview {
+    height: 120px;
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sim-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .sim-preview canvas { width: 100%; height: 100%; }
+
+  .sim-name {
+    padding: 8px 10px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text2);
+    text-align: center;
+  }
+
+  .sim-desc {
+    padding: 0 10px 8px;
+    font-size: 10px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  /* MASTERCLASS */
+  .masterclass-cats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .mc-cat {
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .mc-cat-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mc-cat-icon { color: var(--accent); font-size: 14px; }
+  .mc-cat-title { font-size: 12px; color: var(--text); letter-spacing: 0.06em; }
+
+  .mc-list { list-style: none; }
+
+  .mc-list li {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mc-list li:last-child { border-bottom: none; }
+
+  .mc-list a {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 18px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .mc-list a:hover { background: var(--surface2); }
+
+  .mc-link-icon { color: var(--text3); font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+  .mc-link-body {}
+  .mc-link-title { color: var(--text); font-size: 12px; margin-bottom: 2px; }
+  .mc-link-meta { color: var(--text3); font-size: 10px; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .section-sub { color: var(--text3); font-size: 11px; letter-spacing: 0.06em; }
+
+  /* UTIL */
+  .mt16 { margin-top: 16px; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1px solid var(--border2);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+
+  .info-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    color: var(--text3);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 768px) {
+    .panel { padding: 20px 16px; }
+    .review-layout { grid-template-columns: 1fr; }
+    .sim-grid { grid-template-columns: repeat(2, 1fr); }
+    .masterclass-cats { grid-template-columns: 1fr; }
+    .image-wall { columns: 2; }
+    .step-row { grid-template-columns: 40px 1fr; }
+    .step-status { display: none; }
+  }
+</style>
 </head>
 <body>
-<div id="app">
-  <h1>Hotdog?</h1>
-  <p class="subtitle">Point camera at food. Get truth.</p>
+<div class="app">
 
-  <div id="camera-view">
-    <video id="video" autoplay playsinline muted></video>
-    <img id="snap-result" alt="captured">
-    <canvas id="canvas"></canvas>
+  <header>
+    <div class="brand">
+      <span class="brand-name">X100S Street School</span>
+      <span class="brand-sub">10-Step Programme</span>
+    </div>
+    <div class="progress-header">
+      <span class="progress-label">Overall</span>
+      <div class="progress-bar"><div class="progress-fill" id="globalProgress" style="width:0%"></div></div>
+      <span class="progress-pct" id="globalPct">0%</span>
+    </div>
+  </header>
 
-    <div id="overlay">
-      <div id="snap-btn" onclick="snap()">
-        <div id="snap-btn-inner"></div>
+  <nav>
+    <button class="active" onclick="showPanel('programme',this)">Programme</button>
+    <button onclick="showPanel('review',this)">Shot Review</button>
+    <button onclick="showPanel('wall',this)">Image Wall</button>
+    <button onclick="showPanel('filmsim',this)">Film Sims</button>
+    <button onclick="showPanel('masterclass',this)">Masterclass</button>
+  </nav>
+
+  <main>
+
+    <!-- PROGRAMME -->
+    <div id="panel-programme" class="panel active">
+      <div class="section-header">
+        <div class="section-title">The Programme</div>
+        <div class="section-sub">Fujifilm X100S · Street Photography · 10 Steps to Mastery</div>
+      </div>
+      <div class="info-bar">
+        ← Click any step to expand. Check tasks as you complete them. Progress is saved locally.
+      </div>
+      <div class="steps-grid" id="stepsContainer"></div>
+    </div>
+
+    <!-- SHOT REVIEW -->
+    <div id="panel-review" class="panel">
+      <div class="section-header">
+        <div class="section-title">Shot Review</div>
+        <div class="section-sub">Upload a photo from your X100S. Select your current step. Get targeted feedback.</div>
+      </div>
+      <div class="review-layout">
+        <div>
+          <div class="upload-zone" id="reviewZone">
+            <input type="file" accept="image/*" id="reviewFileInput" onchange="handleReviewUpload(event)">
+            <div class="upload-icon">⬡</div>
+            <div class="upload-label">Drop or click to upload your shot</div>
+            <div class="upload-sub">JPG, RAF, PNG — any export from your X100S</div>
+          </div>
+          <img id="reviewPreview" class="uploaded-preview" alt="Your photo">
+
+          <div class="review-controls">
+            <div class="select-wrap">
+              <select id="reviewStep">
+                <option value="">— Select your current step —</option>
+              </select>
+            </div>
+            <button class="btn primary" onclick="runReview()">Analyse Shot →</button>
+          </div>
+        </div>
+
+        <div class="review-output">
+          <div class="review-output-title">Feedback</div>
+          <div class="review-placeholder" id="reviewPlaceholder">
+            Upload a photo and select a step.<br>Claude will analyse the image against that step's specific goals and give you direct, honest feedback.
+          </div>
+          <div class="review-result" id="reviewResult"></div>
+        </div>
       </div>
     </div>
 
-    <button id="flip-btn" onclick="flipCamera()">⟳</button>
-    <button id="retake-btn" onclick="retake()">✕ Retake</button>
+    <!-- IMAGE WALL -->
+    <div id="panel-wall" class="panel">
+      <div class="section-header">
+        <div class="section-title">Community</div>
+        <div class="section-sub">Photographers who shoot with the X100S. Study their archives. Learn their instincts.</div>
+      </div>
+      <div class="community-grid" id="communityGrid"></div>
 
-    <div id="loading-overlay">
-      <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-      <span style="color:#fff; font-size:13px;">Analyzing...</span>
+      <div class="section-header" style="margin-top:40px">
+        <div class="section-title">Your Wall</div>
+        <div class="section-sub">Upload shots from your X100S. Build your archive here.</div>
+      </div>
+      <div class="wall-header">
+        <button class="wall-upload-btn">
+          <input type="file" accept="image/*" multiple onchange="handleWallUpload(event)">
+          + Add Shot
+        </button>
+        <span style="color:var(--text3);font-size:11px" id="wallCount">0 photos</span>
+      </div>
+      <div class="image-wall" id="imageWall">
+        <div class="wall-placeholder">Your shots will appear here</div>
+      </div>
     </div>
-  </div>
 
-  <div id="no-camera">
-    <p style="font-size:32px; margin-bottom:8px;">📷</p>
-    <p style="font-weight:600; margin-bottom:4px;">Camera not available</p>
-    <p style="font-size:13px;">Please allow camera access and reload.</p>
-  </div>
+    <!-- FILM SIM -->
+    <div id="panel-filmsim" class="panel">
+      <div class="section-header">
+        <div class="section-title">Film Simulation Comparison</div>
+        <div class="section-sub">Upload any shot. See all 10 X100S film simulations side by side. Lock in your style before you go out.</div>
+      </div>
+      <div class="sim-upload-area" id="simUploadArea">
+        <input type="file" accept="image/*" id="simFileInput" onchange="handleSimUpload(event)">
+        <div class="upload-icon">⬡</div>
+        <div class="upload-label">Drop or click to upload a test shot</div>
+        <div class="upload-sub">Best with a scene that has skin tones, shadows, and highlights</div>
+      </div>
+      <div class="sim-grid" id="simGrid"></div>
+    </div>
 
-  <div id="result-panel">
-    <p id="verdict-text"></p>
-    <p id="reason-text"></p>
-  </div>
+    <!-- MASTERCLASS -->
+    <div id="panel-masterclass" class="panel">
+      <div class="section-header">
+        <div class="section-title">Masterclass Index</div>
+        <div class="section-sub">Curated resources. Camera mastery, film simulation, street technique, and workflow. All links go directly to the source.</div>
+      </div>
+      <div class="masterclass-cats" id="masterclassCats"></div>
+    </div>
+
+  </main>
 </div>
 
 <script>
-  // ⚠️ Add your Anthropic API key here.
-  // For production, NEVER expose API keys in frontend code.
-  // Use a backend proxy instead.
-  const API_KEY = 'YOUR_ANTHROPIC_API_KEY';
+// ─── DATA ────────────────────────────────────────────────────────────────────
 
-  let stream = null;
-  let facingMode = 'environment';
+const STEPS = [
+  {
+    title: "Know Your Machine",
+    sub: "Hardware, ergonomics, and physical controls",
+    intro: "The X100S is a fixed-lens camera. That constraint is a gift. Your first job is to stop thinking about what you can't change and start internalising everything you can control. The fixed 23mm f/2 (35mm equiv.) will become your eye. The hybrid viewfinder, the aperture ring, the exposure compensation dial — these are your vocabulary.",
+    tasks: [
+      "Learn all physical controls: aperture ring, shutter speed dial, exposure comp dial",
+      "Understand the hybrid viewfinder — when to use OVF vs EVF",
+      "Set up custom Fn button for one thing you use constantly (I recommend ISO)",
+      "Understand the AF modes: single, zone, wide/tracking",
+      "Format your SD card and understand the buffer",
+    ]
+  },
+  {
+    title: "Exposure Triangle on a Fixed Lens",
+    sub: "Aperture, shutter speed, ISO — the X100S way",
+    intro: "The X100S has a leaf shutter — this changes how you think about sync speed and slow shutter work. You have flash sync up to 1/4000s. The ND filter built into the lens is a street tool, not just for bright days. Learn to expose manually. Aperture priority is fine, but full manual builds instinct. Auto-ISO with a minimum shutter speed is a powerful third option.",
+    tasks: [
+      "Shoot one roll equivalent (36 frames) fully manual — meter it yourself",
+      "Use the built-in ND filter in harsh midday light",
+      "Set up Auto-ISO with minimum shutter 1/125s, max ISO 3200",
+      "Understand what the lens resolves at f/2 vs f/4 vs f/8",
+      "Practice exposure compensation in Aperture Priority — get to ±1.5EV fast",
+    ]
+  },
+  {
+    title: "The 35mm Focal Length",
+    sub: "Learning to see at 35mm",
+    intro: "35mm is not wide. It is not a telephoto. It is the focal length of the street — close enough to feel the scene, wide enough to give context. The X100S's 23mm lens renders like a 35mm on full frame. You need to commit to it. No zooming with your feet to mimic other focal lengths — that defeats the point. Let the 35mm dictate how you approach.",
+    tasks: [
+      "Spend one full day photographing only at minimum focus distance (approx 30cm)",
+      "Practice zone focusing: pre-set focus at 2m at f/8, shoot without half-pressing shutter",
+      "Study 5 photographs made with a 35mm lens — understand how they're composed",
+      "Identify what 35mm includes that you want to exclude (and vice versa)",
+      "Photograph the same scene at different distances — feel the perspective change",
+    ]
+  },
+  {
+    title: "Zone Focusing and Quick Draw",
+    sub: "The technique that separates decisive-moment shooters",
+    intro: "The fastest way to miss a moment is to half-press for AF. Zone focusing — pre-setting your focus point at a known distance — removes that lag. At f/8 and 2m on the X100S, your depth of field covers roughly 1.3m to 4m. That's most street shooting. Internalize the distances. Photograph without looking through the viewfinder. This is where you stop being a camera user and start being a photographer.",
+    tasks: [
+      "Learn the hyperfocal distance at f/8 and f/11 on your X100S",
+      "Shoot 36 frames using zone focus only — no AF",
+      "Practice hip/chest shooting without raising camera to eye",
+      "Set MF with AF+MF assist to snap-in quickly to a set distance",
+      "Go out and photograph for one hour, never half-pressing the shutter",
+    ]
+  },
+  {
+    title: "Film Simulations as Creative Choice",
+    sub: "Locking your look before you shoot",
+    intro: "The X100S ships with film simulations that are genuinely useful — not presets for Instagram, but considered colour science based on real Fuji film stocks. The decision you make in-camera changes how you see through the viewfinder. Shooting Acros, you will see in black and white. That changes what you photograph. Pick one simulation per day and commit to it. This is not about post-processing — it is about creative discipline.",
+    tasks: [
+      "Use the Film Sim Comparison tool in this app to test your own shot",
+      "Spend a full day shooting Classic Chrome only — study what it does to colour",
+      "Try Acros+Red filter for dramatic skies on overcast days",
+      "Set up two Custom Settings (C1, C2) with different film sims and WB for fast switching",
+      "Understand the difference between Provia (neutral) and Velvia (saturated) for street",
+    ]
+  },
+  {
+    title: "Light Reading",
+    sub: "Street light: golden hour, shade, window light, artificial",
+    intro: "Street photography without understanding light is just documentation. The X100S renders shadows beautifully — lean into them. The golden hour is reliable but not the only light worth pursuing. Overcast days diffuse light that flatters faces. Artificial light at night, neon, window spillage — these create scenes you cannot plan. Begin to see light before you see subjects.",
+    tasks: [
+      "Photograph the same street corner at 6am, noon, and 6pm — compare",
+      "Find a location with strong directional light and photograph 10 people walking through it",
+      "Shoot deliberately in harsh overhead shadow — use it rather than fighting it",
+      "Set a custom WB for tungsten light — shoot one evening session with it",
+      "Study how the X100S's metering handles high-contrast scenes — use AE lock",
+    ]
+  },
+  {
+    title: "Approaching People",
+    sub: "Confidence, permission, ethics, and proximity",
+    intro: "The X100S is quiet and small. That helps. But the camera is not the problem — your hesitation is. The ethics of street photography are real: know your local laws, develop a personal code, and be honest when confronted. Approaching closer produces better photographs. A distant shot of a stranger tells you nothing. The camera at arm's length tells you everything.",
+    tasks: [
+      "Photograph at 1-2 meter distance from 10 different strangers in public",
+      "Ask someone for a portrait — make 5 photographs of people who say yes",
+      "Read about the ethics of street photography and write your own position",
+      "Practice the post-shot nod — the acknowledgement that diffuses tension",
+      "Photograph in one location for two hours without moving — become part of it",
+    ]
+  },
+  {
+    title: "Composition and Instinct",
+    sub: "Rules, then forgetting them",
+    intro: "The rule of thirds is a starting point, not a destination. Street photography is fast. You will not consciously think about thirds or leading lines when the shot is happening. You will have internalised them. Study composition as theory. Then go out and forget it. Your eye knows more than you consciously process — give it the vocabulary first, then let it work alone.",
+    tasks: [
+      "Photograph 20 frames deliberately using rule of thirds — do not crop afterwards",
+      "Photograph 20 frames breaking every rule — place subjects in corners, centre everything",
+      "Study 5 Henri Cartier-Bresson photographs — identify what makes each work geometrically",
+      "Use a foreground element in every shot for one session",
+      "Shoot a full session in portrait orientation only — notice what changes",
+    ]
+  },
+  {
+    title: "Editing and Sequencing",
+    sub: "Choosing, culling, and building a body of work",
+    intro: "The X100S JPEG output is strong enough to publish directly. But editing — in the selection sense — is where photography becomes personal. Learn to be ruthless: 10 great photographs are worth more than 200 average ones. Sequencing matters: how photographs sit next to each other creates meaning that no single image can. Begin thinking in series, not in singles.",
+    tasks: [
+      "Edit a session down to your 10 best photographs — no more",
+      "Arrange those 10 in a sequence — consider emotional flow, not chronology",
+      "Share your edit in the Image Wall and read it as a viewer would",
+      "Learn Lightroom or Capture One for the X100S RAF file profile (if shooting RAW)",
+      "Create one 5-photo series that holds together as a complete statement",
+    ]
+  },
+  {
+    title: "Practice as System",
+    sub: "Daily habits that compound over months",
+    intro: "The photographers you admire did not get there by waiting for the right moments. They built systems. Daily or weekly outings with defined constraints. Reviewing their contact sheets without mercy. Studying the work of others seriously. The X100S is small enough to carry every day. That is the point. Build the habit and the camera becomes invisible — to you and to the people you photograph.",
+    tasks: [
+      "Define your weekly minimum: at least one dedicated shooting session",
+      "Start a shooting journal — note conditions, approach, what failed and why",
+      "Complete all 10 steps of this programme over 10 weeks (one per week)",
+      "Submit your 10 best photographs to the Shot Review in this app — one per step",
+      "Identify three photographers whose work you will study monthly, indefinitely",
+    ]
+  }
+];
 
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const snapResult = document.getElementById('snap-result');
-  const overlay = document.getElementById('overlay');
-  const retakeBtn = document.getElementById('retake-btn');
-  const flipBtn = document.getElementById('flip-btn');
-  const loadingOverlay = document.getElementById('loading-overlay');
-  const resultPanel = document.getElementById('result-panel');
-  const verdictText = document.getElementById('verdict-text');
-  const reasonText = document.getElementById('reason-text');
-  const noCam = document.getElementById('no-camera');
-  const cameraView = document.getElementById('camera-view');
+const FILM_SIMS = [
+  { name: "Provia/Standard", desc: "Faithful, neutral rendition", filters: { saturation: 1, contrast: 1, hue: 0, brightness: 1, warm: 0 } },
+  { name: "Velvia/Vivid", desc: "Punchy colours, deep shadows", filters: { saturation: 1.5, contrast: 1.25, hue: 5, brightness: 0.97, warm: 5 } },
+  { name: "Astia/Soft", desc: "Gentle skin tones, pastel", filters: { saturation: 0.85, contrast: 0.9, hue: -3, brightness: 1.03, warm: 3 } },
+  { name: "Classic Chrome", desc: "Desaturated, filmic shadows", filters: { saturation: 0.6, contrast: 1.15, hue: -8, brightness: 0.98, warm: -5 } },
+  { name: "Pro Neg Hi", desc: "High contrast portraiture", filters: { saturation: 0.9, contrast: 1.2, hue: 2, brightness: 0.96, warm: 2 } },
+  { name: "Pro Neg Std", desc: "Soft contrast, smooth tones", filters: { saturation: 0.8, contrast: 0.88, hue: 0, brightness: 1.02, warm: 1 } },
+  { name: "Eterna/Cinema", desc: "Muted shadows, cinematic", filters: { saturation: 0.55, contrast: 0.82, hue: -12, brightness: 1.04, warm: -8 } },
+  { name: "Acros", desc: "Monochrome, sharp grain", filters: { saturation: 0, contrast: 1.1, hue: 0, brightness: 1, warm: 0 } },
+  { name: "Acros + Red", desc: "Dramatic skies, deep contrast", filters: { saturation: 0, contrast: 1.35, hue: 0, brightness: 0.93, warm: 0, redBoost: true } },
+  { name: "Acros + Yellow", desc: "Natural tones, soft sky", filters: { saturation: 0, contrast: 1.1, hue: 0, brightness: 1, warm: 0, yellowBoost: true } },
+];
 
-  async function startCamera() {
-    try {
-      if (stream) stream.getTracks().forEach(t => t.stop());
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 720 }, height: { ideal: 720 } },
-        audio: false
-      });
-      video.srcObject = stream;
-      cameraView.style.display = 'block';
-      noCam.style.display = 'none';
-    } catch (e) {
-      cameraView.style.display = 'none';
-      noCam.style.display = 'block';
+const COMMUNITY = [
+  { name: "Bellamy Hunt", handle: "Japan Camera Hunter", specialty: "Street / Gear", avatar: "B", desc: "Tokyo-based collector and shooter. Decades of X-series use. His archive documents how to see in tight Japanese urban spaces.", url: "https://www.japancamerahunter.com" },
+  { name: "Eric Kim", handle: "erickim.com", specialty: "Street Theory", avatar: "E", desc: "Prolific writer on street photography philosophy. His free books and essays on approach and ethics are essential reading regardless of camera.", url: "https://erickimphotography.com" },
+  { name: "Valerie Jardin", handle: "streetfocuspodcast.com", specialty: "Technique", avatar: "V", desc: "Hosts the Street Focus Podcast. Strong focus on composition and the practice of slowing down without losing spontaneity.", url: "https://streetfocuspodcast.com" },
+  { name: "Thomas Leuthard", handle: "thomasleuthard.com", specialty: "Proximity", avatar: "T", desc: "Swiss photographer, all free books on street photography. Known for extreme proximity and candid work across European cities.", url: "https://thomasleuthard.com" },
+  { name: "Rinzi Ruiz", handle: "rinziruiz.com", specialty: "Light & Shadow", avatar: "R", desc: "Los Angeles based. Studies how light fragments across urban geometry. Heavy Fuji shooter with an exceptional black and white body of work.", url: "https://rinziruiz.com" },
+  { name: "Kevin Mullins", handle: "kevinmullinsphotography.co.uk", specialty: "Reportage", avatar: "K", desc: "Documentary and street photographer. His work on how to build narrative over a single session is directly applicable to street practice.", url: "https://www.kevinmullinsphotography.co.uk" },
+  { name: "Zack Arias", handle: "zackarias.com", specialty: "X-Series Expert", avatar: "Z", desc: "Switched to Fuji X-series publicly and documented every part of his learning process. Invaluable real-world camera knowledge.", url: "https://zackarias.com" },
+  { name: "Patrick La Roque", handle: "laroquephoto.com", specialty: "Film Sims & Tone", avatar: "P", desc: "Montreal photographer deeply embedded in Fuji X ecosystem. His JPEG and film simulation workflows are some of the best documented anywhere.", url: "https://laroquephoto.com" },
+];
+
+const MASTERCLASS = [
+  {
+    cat: "Camera Mastery",
+    icon: "◎",
+    links: [
+      { title: "X100S Full User Guide (Fujifilm)", meta: "Official documentation — read pages 36–60 on exposure", url: "https://fujifilm-dsc.com/en/manual/x100s/" },
+      { title: "Zack Arias: Real World Fuji X Review", meta: "Honest real-world use, not spec sheet analysis", url: "https://zackarias.com/for-photographers/gear-gadgets/fuji-x100s-review/" },
+      { title: "Japan Camera Hunter: X100S Long Term Use", meta: "Two years of field use documentation", url: "https://www.japancamerahunter.com" },
+      { title: "Zone Focusing Guide — Bellamy Hunt", meta: "The definitive quick-draw tutorial for X100-series", url: "https://www.japancamerahunter.com/2012/12/zone-focus/" },
+    ]
+  },
+  {
+    cat: "Film Simulations",
+    icon: "▣",
+    links: [
+      { title: "Patrick La Roque: Film Sim Deep Dives", meta: "The best writing on Fuji JPEG science in existence", url: "https://laroquephoto.com" },
+      { title: "Fuji X Weekly: Simulation Recipes", meta: "Community-contributed film sim recipes for X100S", url: "https://fujixweekly.com" },
+      { title: "Classic Chrome: The Street Photographer's Sim", meta: "Why Classic Chrome dominates street photography", url: "https://fujixweekly.com/category/film-simulation-recipes/" },
+      { title: "Acros — Shooting in Black and White In-Camera", meta: "How to use Acros filters (R, Y, G) effectively", url: "https://fujifilm-dsc.com/en/manual/x100s/" },
+    ]
+  },
+  {
+    cat: "Street Technique",
+    icon: "⊕",
+    links: [
+      { title: "Eric Kim: Street Photography Composition", meta: "Free PDF — the most comprehensive free guide available", url: "https://erickimphotography.com/blog/street-photography-composition-lessons/" },
+      { title: "Thomas Leuthard: Going Candid (Free Book)", meta: "Full free ebook on approaching strangers", url: "https://thomasleuthard.com/downloads/" },
+      { title: "Valerie Jardin: Street Photography Simplified", meta: "How to work a location and slow down meaningfully", url: "https://streetfocuspodcast.com" },
+      { title: "Rinzi Ruiz: Light and Shadow Study", meta: "How to pre-visualise and wait for the right light", url: "https://rinziruiz.com" },
+    ]
+  },
+  {
+    cat: "Workflow & Editing",
+    icon: "◈",
+    links: [
+      { title: "X-Trans RAF Profiles in Lightroom", meta: "Why Lightroom mishandles X-Trans and how to fix it", url: "https://www.lrtimelapse.com/blog/fujifilm-x-trans-sensor-lightroom/" },
+      { title: "Iridient X-Transformer for X100S RAW", meta: "Best RAW converter for X-Trans files before Lightroom", url: "https://www.iridientdigital.com/products/xtransformer.html" },
+      { title: "Kevin Mullins: Documentary Edit Workflow", meta: "How a professional sequences and selects work", url: "https://www.kevinmullinsphotography.co.uk" },
+      { title: "The Edit: How to Cull Ruthlessly", meta: "Eric Kim on deleting 95% of your photographs", url: "https://erickimphotography.com/blog/" },
+    ]
+  }
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let state = JSON.parse(localStorage.getItem('x100s_state') || 'null') || {
+  tasks: {}, // "step-taskIdx": true
+  expanded: null,
+  wallImages: [],
+};
+
+function saveState() {
+  localStorage.setItem('x100s_state', JSON.stringify(state));
+}
+
+// ─── PROGRAMME TAB ────────────────────────────────────────────────────────────
+
+function buildProgramme() {
+  const container = document.getElementById('stepsContainer');
+  container.innerHTML = '';
+
+  const stepSelect = document.getElementById('reviewStep');
+  stepSelect.innerHTML = '<option value="">— Select your current step —</option>';
+
+  STEPS.forEach((step, i) => {
+    const stepKey = `step-${i}`;
+    const total = step.tasks.length;
+    const done = step.tasks.filter((_, ti) => state.tasks[`${stepKey}-${ti}`]).length;
+    const pct = Math.round((done / total) * 100);
+    const isComplete = done === total;
+    const isExpanded = state.expanded === i;
+
+    const row = document.createElement('div');
+    row.className = `step-row${isComplete ? ' done' : ''}${isExpanded ? ' expanded active-step' : ''}`;
+    row.dataset.step = i;
+
+    row.innerHTML = `
+      <div class="step-num">${String(i + 1).padStart(2, '0')}</div>
+      <div class="step-body">
+        <div class="step-title">${step.title}</div>
+        <div class="step-sub">${step.sub}</div>
+        <div class="step-content">
+          <p>${step.intro}</p>
+          <ul class="tasks">
+            ${step.tasks.map((task, ti) => `
+              <li>
+                <input type="checkbox" id="task-${i}-${ti}" ${state.tasks[`${stepKey}-${ti}`] ? 'checked' : ''}
+                  onchange="toggleTask(${i},${ti},this)" onclick="event.stopPropagation()">
+                <label for="task-${i}-${ti}" onclick="event.stopPropagation()">${task}</label>
+              </li>
+            `).join('')}
+          </ul>
+          <div class="step-cta">
+            <button class="btn" onclick="event.stopPropagation();switchTab('review',${i})">Review a shot from this step →</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-status">
+        <div class="status-dot"></div>
+        <div class="status-pct">${pct}%</div>
+      </div>
+    `;
+
+    row.addEventListener('click', () => toggleStep(i));
+    container.appendChild(row);
+
+    // Add to step select
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `Step ${i + 1}: ${step.title}`;
+    stepSelect.appendChild(opt);
+  });
+
+  updateGlobalProgress();
+}
+
+function toggleStep(i) {
+  state.expanded = state.expanded === i ? null : i;
+  saveState();
+  buildProgramme();
+}
+
+function toggleTask(stepIdx, taskIdx, checkbox) {
+  const key = `step-${stepIdx}-${taskIdx}`;
+  state.tasks[key] = checkbox.checked;
+  saveState();
+  updateGlobalProgress();
+
+  const row = checkbox.closest('.step-row');
+  const total = STEPS[stepIdx].tasks.length;
+  const done = STEPS[stepIdx].tasks.filter((_, ti) => state.tasks[`step-${stepIdx}-${ti}`]).length;
+  const pct = Math.round((done / total) * 100);
+  row.querySelector('.status-pct').textContent = pct + '%';
+  if (done === total) row.classList.add('done');
+  else row.classList.remove('done');
+}
+
+function updateGlobalProgress() {
+  const total = STEPS.reduce((s, step) => s + step.tasks.length, 0);
+  const done = Object.values(state.tasks).filter(Boolean).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('globalProgress').style.width = pct + '%';
+  document.getElementById('globalPct').textContent = pct + '%';
+}
+
+function switchTab(tabName, stepIdx) {
+  const tabs = document.querySelectorAll('nav button');
+  const panels = {
+    programme: 0, review: 1, wall: 2, filmsim: 3, masterclass: 4
+  };
+  tabs[panels[tabName]].click();
+  if (stepIdx !== undefined) {
+    setTimeout(() => {
+      document.getElementById('reviewStep').value = stepIdx;
+    }, 50);
+  }
+}
+
+// ─── SHOT REVIEW TAB ──────────────────────────────────────────────────────────
+
+let reviewImageBase64 = null;
+
+function handleReviewUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('reviewPreview');
+    const zone = document.getElementById('reviewZone');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    zone.style.display = 'none';
+    // Store base64 (strip data: prefix for API)
+    reviewImageBase64 = e.target.result.split(',')[1];
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runReview() {
+  const stepIdx = document.getElementById('reviewStep').value;
+  if (!reviewImageBase64) { alert('Please upload a photo first.'); return; }
+  if (stepIdx === '') { alert('Please select the step you are on.'); return; }
+
+  const step = STEPS[parseInt(stepIdx)];
+  const resultEl = document.getElementById('reviewResult');
+  const placeholder = document.getElementById('reviewPlaceholder');
+
+  placeholder.style.display = 'none';
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div class="loading-dots"><span class="spinner"></span>&nbsp; Analysing your photograph...</div>';
+
+  const prompt = `You are a strict, experienced street photography mentor who knows the Fujifilm X100S deeply.
+
+The student is on Step ${parseInt(stepIdx) + 1}: "${step.title}".
+Step context: ${step.intro}
+Step tasks: ${step.tasks.join('; ')}
+
+Analyse the photograph the student has uploaded against the specific goals of this step.
+Give precise, direct feedback. No flattery. No vague encouragement. 
+Structure your response as:
+1. One sentence on what the photograph is doing well relative to this step
+2. Two or three specific things that need improvement for this step's goals
+3. One concrete assignment: what to go out and shoot next to address the main weakness
+4. Scores out of 10 for: Exposure, Composition, Moment, Step Relevance
+
+Format scores as: SCORES: Exposure:X, Composition:X, Moment:X, Step Relevance:X
+Keep the whole response under 250 words.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: reviewImageBase64 } },
+            { type: "text", text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content.map(b => b.text || '').join('');
+
+    // Parse scores
+    const scoreMatch = text.match(/SCORES:\s*Exposure:(\d+),\s*Composition:(\d+),\s*Moment:(\d+),\s*Step Relevance:(\d+)/i);
+    let scores = null;
+    let mainText = text;
+
+    if (scoreMatch) {
+      scores = {
+        Exposure: parseInt(scoreMatch[1]),
+        Composition: parseInt(scoreMatch[2]),
+        Moment: parseInt(scoreMatch[3]),
+        'Step Relevance': parseInt(scoreMatch[4]),
+      };
+      mainText = text.replace(/SCORES:.*$/im, '').trim();
     }
-  }
 
-  async function flipCamera() {
-    facingMode = facingMode === 'environment' ? 'user' : 'environment';
-    await startCamera();
-  }
+    let html = mainText.split('\n').filter(l => l.trim()).map(l => `<p>${l}</p>`).join('');
 
-  function snap() {
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 640;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-    snapResult.src = dataUrl;
-    snapResult.style.display = 'block';
-    video.style.display = 'none';
-    overlay.style.display = 'none';
-    flipBtn.style.display = 'none';
-    retakeBtn.style.display = 'block';
-    resultPanel.style.display = 'none';
-
-    analyze(dataUrl.split(',')[1]);
-  }
-
-  function retake() {
-    snapResult.style.display = 'none';
-    video.style.display = 'block';
-    overlay.style.display = 'flex';
-    flipBtn.style.display = 'flex';
-    retakeBtn.style.display = 'none';
-    resultPanel.style.display = 'none';
-    loadingOverlay.style.display = 'none';
-  }
-
-  async function analyze(b64) {
-    loadingOverlay.style.display = 'flex';
-    resultPanel.style.display = 'none';
-
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-calls': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `You are the Hotdog Detector. Your sole purpose: determine if an image contains a hotdog.
-A hotdog = cooked sausage served in a bun/roll. Corn dogs count. Bare sausage without bun = not hotdog.
-Respond ONLY in raw JSON, no markdown fences, no preamble.
-Format: {"verdict":"hotdog" or "not hotdog","reason":"one short witty sentence"}`,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } },
-              { type: 'text', text: 'Hotdog or not hotdog?' }
-            ]
-          }]
-        })
-      });
-
-      const data = await res.json();
-      const text = data.content.map(b => b.text || '').join('');
-      const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-      const isHotdog = parsed.verdict === 'hotdog';
-
-      loadingOverlay.style.display = 'none';
-      resultPanel.style.display = 'block';
-      resultPanel.className = isHotdog ? 'hotdog' : 'not-hotdog';
-      verdictText.className = isHotdog ? 'hotdog' : 'not-hotdog';
-      reasonText.className = isHotdog ? 'hotdog' : 'not-hotdog';
-      verdictText.textContent = isHotdog ? '🌭 Hotdog!' : '🚫 Not hotdog';
-      reasonText.textContent = parsed.reason;
-    } catch (e) {
-      loadingOverlay.style.display = 'none';
-      resultPanel.style.display = 'block';
-      resultPanel.className = 'not-hotdog';
-      verdictText.className = 'not-hotdog';
-      verdictText.textContent = 'Error';
-      reasonText.textContent = 'Could not analyze. Try again.';
+    if (scores) {
+      html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">';
+      for (const [label, val] of Object.entries(scores)) {
+        html += `
+          <div class="score-row">
+            <span class="score-label">${label}</span>
+            <div class="score-track"><div class="score-fill" style="width:${val*10}%"></div></div>
+            <span class="score-val">${val}/10</span>
+          </div>`;
+      }
+      html += '</div>';
     }
+
+    resultEl.innerHTML = html;
+  } catch(err) {
+    resultEl.innerHTML = `<p style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+// ─── COMMUNITY WALL ───────────────────────────────────────────────────────────
+
+function buildCommunity() {
+  const grid = document.getElementById('communityGrid');
+  grid.innerHTML = COMMUNITY.map(c => `
+    <a class="community-card" href="${c.url}" target="_blank" rel="noopener">
+      <div class="card-img-area">
+        <div class="card-avatar">${c.avatar}</div>
+        <div class="card-specialty">${c.specialty}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${c.name}</div>
+        <div class="card-handle">${c.handle}</div>
+        <div class="card-desc">${c.desc}</div>
+        <div class="card-link">→ View Archive</div>
+      </div>
+    </a>
+  `).join('');
+}
+
+function handleWallUpload(event) {
+  const files = Array.from(event.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      state.wallImages.push({ src: e.target.result, name: file.name, date: Date.now() });
+      saveState();
+      renderWall();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderWall() {
+  const wall = document.getElementById('imageWall');
+  const count = document.getElementById('wallCount');
+  count.textContent = state.wallImages.length + ' photos';
+
+  if (!state.wallImages.length) {
+    wall.innerHTML = '<div class="wall-placeholder">Your shots will appear here</div>';
+    return;
   }
 
-  startCamera();
+  wall.innerHTML = state.wallImages.map((img, i) => `
+    <div class="wall-image">
+      <img src="${img.src}" alt="${img.name}" loading="lazy">
+      <div class="wall-image-meta"><span>${img.name}</span></div>
+    </div>
+  `).join('');
+}
+
+// ─── FILM SIM TAB ─────────────────────────────────────────────────────────────
+
+let simImageEl = null;
+
+function handleSimUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('simUploadArea').style.display = 'none';
+    const img = new Image();
+    img.onload = () => {
+      simImageEl = img;
+      renderSimGrid();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyFilmSim(sourceImg, filters) {
+  const canvas = document.createElement('canvas');
+  const W = 300, H = 200;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Draw source image scaled
+  ctx.drawImage(sourceImg, 0, 0, W, H);
+
+  const imgData = ctx.getImageData(0, 0, W, H);
+  const d = imgData.data;
+
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i+1], b = d[i+2];
+
+    // Brightness
+    r *= filters.brightness; g *= filters.brightness; b *= filters.brightness;
+
+    // Contrast
+    const mid = 127.5;
+    r = (r - mid) * filters.contrast + mid;
+    g = (g - mid) * filters.contrast + mid;
+    b = (b - mid) * filters.contrast + mid;
+
+    // Saturation (convert to greyscale, lerp)
+    const grey = 0.299 * r + 0.587 * g + 0.114 * b;
+    r = grey + (r - grey) * filters.saturation;
+    g = grey + (g - grey) * filters.saturation;
+    b = grey + (b - grey) * filters.saturation;
+
+    // Warm shift
+    if (filters.warm > 0) { r += filters.warm; b -= filters.warm * 0.5; }
+    else if (filters.warm < 0) { b -= filters.warm; r += filters.warm * 0.3; }
+
+    // Hue shift (simple RGB rotation approximation)
+    if (filters.hue !== 0) {
+      const h = filters.hue * (Math.PI / 180);
+      const cos = Math.cos(h), sin = Math.sin(h);
+      const nr = r * (cos + (1-cos)/3 + sin*Math.sqrt(1/3)) + g * ((1-cos)/3 - sin*Math.sqrt(1/3)) + b * ((1-cos)/3);
+      const ng = r * ((1-cos)/3) + g * (cos + (1-cos)/3) + b * ((1-cos)/3 - sin*Math.sqrt(1/3));
+      const nb = r * ((1-cos)/3 + sin*Math.sqrt(1/3)) + g * ((1-cos)/3 + sin*Math.sqrt(1/3)) + b * (cos + (1-cos)/3);
+      r = nr; g = ng; b = nb;
+    }
+
+    // Acros red filter: boosts reds, darkens blues/greens
+    if (filters.redBoost) {
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const redInfluence = d[i] / 255;
+      r = lum + (lum - lum) + redInfluence * 40;
+      g = lum * 0.85;
+      b = lum * 0.7;
+    }
+
+    // Acros yellow: slight lum lift on warm tones
+    if (filters.yellowBoost) {
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      const warmInfluence = (d[i] + d[i+1]) / 510;
+      r = lum + warmInfluence * 15;
+      g = lum + warmInfluence * 10;
+      b = lum;
+    }
+
+    d[i] = Math.max(0, Math.min(255, r));
+    d[i+1] = Math.max(0, Math.min(255, g));
+    d[i+2] = Math.max(0, Math.min(255, b));
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+  return canvas.toDataURL();
+}
+
+function renderSimGrid() {
+  const grid = document.getElementById('simGrid');
+  grid.innerHTML = FILM_SIMS.map(sim => {
+    const dataUrl = applyFilmSim(simImageEl, sim.filters);
+    return `
+      <div class="sim-card">
+        <div class="sim-preview">
+          <img src="${dataUrl}" alt="${sim.name}">
+        </div>
+        <div class="sim-name">${sim.name}</div>
+        <div class="sim-desc">${sim.desc}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─── MASTERCLASS TAB ──────────────────────────────────────────────────────────
+
+function buildMasterclass() {
+  const container = document.getElementById('masterclassCats');
+  container.innerHTML = MASTERCLASS.map(cat => `
+    <div class="mc-cat">
+      <div class="mc-cat-header">
+        <span class="mc-cat-icon">${cat.icon}</span>
+        <span class="mc-cat-title">${cat.cat}</span>
+      </div>
+      <ul class="mc-list">
+        ${cat.links.map(link => `
+          <li>
+            <a href="${link.url}" target="_blank" rel="noopener">
+              <span class="mc-link-icon">↗</span>
+              <div class="mc-link-body">
+                <div class="mc-link-title">${link.title}</div>
+                <div class="mc-link-meta">${link.meta}</div>
+              </div>
+            </a>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+buildProgramme();
+buildCommunity();
+renderWall();
+buildMasterclass();
 </script>
 </body>
 </html>
